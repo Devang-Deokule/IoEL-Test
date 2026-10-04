@@ -18,6 +18,11 @@ import * as firebaseHistory from "./historyService";
 import * as firebaseAlerts from './alertService';
 import * as firebaseCheckpoints from './checkpointService';
 import * as firebaseScan from './scanService';
+import {
+  setSecurityAlertState,
+  markAlertDeleted,
+  markAlertsDeleted,
+} from './securityMonitoringService';
 
 export const isMockMode = import.meta.env.VITE_USE_MOCK !== 'false';
 export const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
@@ -69,8 +74,45 @@ export const api = {
  getAlerts: () => firebaseAlerts.getAlerts(),
 
   // PUT /alerts/{id}   body: { state: 'new' | 'acknowledged' | 'resolved' }
-  updateAlertState: (id, state) =>
-  firebaseAlerts.updateAlertState(id, state),
+  updateAlertState: (id, state) => {
+    if (String(id).startsWith('sec-')) {
+      setSecurityAlertState(id, state);
+      return Promise.resolve({ id, state });
+    }
+    return firebaseAlerts.updateAlertState(id, state);
+  },
+
+  // DELETE /alerts/{id}
+  deleteAlert: async (id) => {
+    if (String(id).startsWith('sec-')) {
+      markAlertDeleted(id);
+      return true;
+    }
+    if (isMockMode && mock.deleteAlert) {
+      return mock.deleteAlert(id);
+    }
+    return firebaseAlerts.deleteAlert(id).catch(() => true);
+  },
+
+  // Bulk DELETE /alerts
+  deleteAlerts: async (ids = []) => {
+    if (!ids || !ids.length) return true;
+    const secIds = ids.filter((id) => String(id).startsWith('sec-'));
+    const firestoreIds = ids.filter((id) => !String(id).startsWith('sec-'));
+
+    if (secIds.length > 0) {
+      markAlertsDeleted(secIds);
+    }
+
+    if (firestoreIds.length > 0) {
+      if (isMockMode && mock.deleteAlert) {
+        await Promise.allSettled(firestoreIds.map((id) => mock.deleteAlert(id)));
+      } else {
+        await Promise.allSettled(firestoreIds.map((id) => firebaseAlerts.deleteAlert(id).catch(() => true)));
+      }
+    }
+    return true;
+  },
 
   // GET /checkpoints   (each has status: 'active' | 'inactive', reader: string | null)
   getCheckpoints: () => firebaseCheckpoints.getCheckpoints(),

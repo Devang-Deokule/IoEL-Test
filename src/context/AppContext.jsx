@@ -1,6 +1,12 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../services/api';
 import { IN_TRANSIT, LOCATIONS } from '../data/constants';
+import {
+  subscribeToReadings,
+  extractAlertsFromSecurityReadings,
+} from '../services/securityMonitoringService';
+import { syncAlertNotifications } from '../services/notificationService';
+import { sirenService } from '../services/sirenService';
 
 export const AppContext = createContext(null);
 
@@ -10,10 +16,75 @@ const TOAST_MS = 4500;
 export function AppProvider({ children }) {
   const [assets, setAssets] = useState([]);
   const [history, setHistory] = useState([]);
-  const [alerts, setAlerts] = useState([]);
+  const [assetAlerts, setAssetAlerts] = useState([]);
+  const [securityAlerts, setSecurityAlerts] = useState([]);
   const [checkpoints, setCheckpoints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sirenMuted, setSirenMuted] = useState(false);
+
+  // Subscribe to live Firebase RTDB security telemetry to generate central alerts
+  useEffect(() => {
+    let unsubscribe;
+    try {
+      unsubscribe = subscribeToReadings('room', (readings) => {
+        if (readings && readings.length > 0) {
+          const secAlerts = extractAlertsFromSecurityReadings(readings, 'Main Hospital Ward');
+          setSecurityAlerts(secAlerts);
+
+          // Synchronize Desktop Push Notifications & Emails directly with active website alerts
+          syncAlertNotifications(secAlerts, 'Main Hospital Ward', readings[0]);
+        }
+      });
+    } catch (err) {
+      console.warn('Real-time security alert subscription error:', err);
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  // Merged alerts list: Live Security Alerts (Fire, Earthquake, Smoke, Temp) + Asset Alerts
+  const alerts = useMemo(() => {
+    const combined = [...securityAlerts, ...assetAlerts];
+    combined.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    return combined;
+  }, [securityAlerts, assetAlerts]);
+
+  // Emergency Siren Sound Control: Active when ANY security hazard alert is unacknowledged ('new')
+  const hasActiveEmergency = useMemo(
+    () => alerts.some((a) => a.isSecurityAlert && a.state === 'new'),
+    [alerts]
+  );
+
+  useEffect(() => {
+    if (hasActiveEmergency && !sirenMuted) {
+      sirenService.start();
+    } else {
+      sirenService.stop();
+    }
+    return () => {
+      sirenService.stop();
+    };
+  }, [hasActiveEmergency, sirenMuted]);
+
+  const toggleSilenceSiren = useCallback(() => {
+    setSirenMuted((prev) => {
+      const next = !prev;
+      if (next) {
+        sirenService.stop();
+      } else if (hasActiveEmergency) {
+        sirenService.start();
+      }
+      return next;
+    });
+  }, [hasActiveEmergency]);
+
+  const silenceSiren = useCallback(() => {
+    setSirenMuted(true);
+    sirenService.stop();
+  }, []);
 
   const [scanning, setScanning] = useState(false);
   const [led, setLed] = useState('ready'); // ready | entry | exit | alert
@@ -46,7 +117,7 @@ export function AppProvider({ children }) {
     ]);
     setAssets(a);
     setHistory(h);
-    setAlerts(al);
+    setAssetAlerts(al);
     setCheckpoints(c);
   }, []);
 
@@ -153,14 +224,62 @@ export function AppProvider({ children }) {
   const setAlertState = useCallback(
     async (id, state) => {
       try {
-        const updated = await api.updateAlertState(id, state);
-        setAlerts((prev) => prev.map((a) => (a.id === id ? updated : a)));
+        await api.updateAlertState(id, state);
+        if (String(id).startsWith('sec-')) {
+          setSecurityAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, state } : a)));
+        } else {
+          setAssetAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, state } : a)));
+        }
+        notify(`Alert state changed to ${state}.`, 'success');
       } catch (e) {
-        notify(e.message, 'danger');
+        notify(e.message || 'Could not update alert', 'danger');
       }
     },
     [notify],
   );
+
+  const deleteAlert = useCallback(
+    async (id) => {
+      try {
+        await api.deleteAlert(id);
+        if (String(id).startsWith('sec-')) {
+          setSecurityAlerts((prev) => prev.filter((a) => a.id !== id));
+        } else {
+          setAssetAlerts((prev) => prev.filter((a) => a.id !== id));
+        }
+        notify('Alert deleted successfully.', 'success');
+      } catch (e) {
+        notify(e.message || 'Could not delete alert', 'danger');
+      }
+    },
+    [notify],
+  );
+
+  const deleteAcknowledgedAlerts = useCallback(async () => {
+    const ackAlerts = alerts.filter((a) => a.state === 'acknowledged');
+    if (ackAlerts.length === 0) {
+      notify('No acknowledged alerts to delete.', 'info');
+      return 0;
+    }
+
+    const count = ackAlerts.length;
+    const ackIds = ackAlerts.map((a) => a.id);
+
+    try {
+      if (api.deleteAlerts) {
+        await api.deleteAlerts(ackIds);
+      } else {
+        await Promise.allSettled(ackIds.map((id) => api.deleteAlert(id)));
+      }
+      setSecurityAlerts((prev) => prev.filter((a) => a.state !== 'acknowledged'));
+      setAssetAlerts((prev) => prev.filter((a) => a.state !== 'acknowledged'));
+      notify(`Deleted ${count} acknowledged alert${count > 1 ? 's' : ''}.`, 'success');
+      return count;
+    } catch (e) {
+      notify(e.message || 'Could not delete acknowledged alerts', 'danger');
+      return 0;
+    }
+  }, [alerts, notify]);
 
   const resetDemo = useCallback(async () => {
     try {
@@ -224,6 +343,13 @@ export function AppProvider({ children }) {
     updateAssetStatus,
     addAsset,
     setAlertState,
+    deleteAlert,
+    deleteAcknowledgedAlerts,
+    hasActiveEmergency,
+    sirenActive: hasActiveEmergency && !sirenMuted,
+    sirenMuted,
+    toggleSilenceSiren,
+    silenceSiren,
     resetDemo,
   };
 

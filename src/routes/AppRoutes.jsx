@@ -6,6 +6,7 @@ import AssetDetails from '../pages/AssetDetails';
 import TrackingHistory from '../pages/TrackingHistory';
 import Checkpoints from '../pages/Checkpoints';
 import Alerts from '../pages/Alerts';
+import SecurityMonitoring from '../pages/SecurityMonitoring';
 import SystemStatus from '../pages/SystemStatus';
 import Settings from '../pages/Settings';
 import NotFound from '../pages/NotFound';
@@ -20,6 +21,7 @@ export default function AppRoutes() {
         <Route path="history" element={<TrackingHistory />} />
         <Route path="checkpoints" element={<Checkpoints />} />
         <Route path="alerts" element={<Alerts />} />
+        <Route path="security-monitoring" element={<SecurityMonitoring />} />
         <Route path="system-status" element={<SystemStatus />} />
         <Route path="settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />

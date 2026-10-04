@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { Activity, Boxes, History, LayoutDashboard, ScanLine, Settings, TriangleAlert, X, Radio } from 'lucide-react';
+import { Activity, Boxes, History, LayoutDashboard, ScanLine, Settings, TriangleAlert, X, Radio, ShieldAlert } from 'lucide-react';
 import { useApp } from '../hooks/useApp';
 
 const MAIN_NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/assets', label: 'Assets', icon: Boxes },
+  { to: '/security-monitoring', label: 'Security & IoT', icon: ShieldAlert },
   { to: '/history', label: 'Tracking History', icon: History },
   { to: '/checkpoints', label: 'Checkpoints', icon: ScanLine },
   { to: '/alerts', label: 'Alerts', icon: TriangleAlert, badge: true },

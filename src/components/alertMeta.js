@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Info, Radio, ScanLine, ShieldAlert, WifiOff } from 'lucide-react';
+import { ArrowLeftRight, Info, Radio, ScanLine, ShieldAlert, WifiOff, Flame, Wind, Activity, Thermometer } from 'lucide-react';
 
 export const TYPE_ICONS = {
   UNKNOWN_RFID: ShieldAlert,
@@ -6,6 +6,11 @@ export const TYPE_ICONS = {
   SCAN_FAILED: ScanLine,
   CHECKPOINT_OFFLINE: WifiOff,
   READER_ASSIGNED: Radio,
+  FIRE: Flame,
+  SMOKE: Wind,
+  EARTHQUAKE: Activity,
+  VIBRATION: Activity,
+  TEMPERATURE: Thermometer,
   DEFAULT: Info,
 };
 

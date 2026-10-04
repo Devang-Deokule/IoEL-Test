@@ -5,6 +5,7 @@ import {
   getDoc,
   updateDoc,
   setDoc,
+  deleteDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase";
@@ -73,6 +74,18 @@ export const updateAlertState = async (alertId, state) => {
     return convertAlert(updated);
   } catch (error) {
     console.error("Error updating alert:", error);
+    throw error;
+  }
+};
+
+// Delete alert
+export const deleteAlert = async (alertId) => {
+  try {
+    const alertRef = doc(db, "alerts", alertId);
+    await deleteDoc(alertRef);
+    return true;
+  } catch (error) {
+    console.error("Error deleting alert:", error);
     throw error;
   }
 };

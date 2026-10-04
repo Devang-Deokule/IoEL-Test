@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, Menu, Radio } from 'lucide-react';
+import { Bell, Menu, Radio, Volume2, VolumeX } from 'lucide-react';
 import { useApp } from '../hooks/useApp';
 import { isMockMode } from '../services/api';
 
 const TITLES = {
   '': 'Dashboard',
   assets: 'Assets',
+  'security-monitoring': 'Security Monitoring System',
   history: 'Tracking History',
   checkpoints: 'Checkpoints',
   alerts: 'Alerts',
@@ -21,7 +22,7 @@ function titleFor(pathname) {
 
 export default function Topbar({ onMenu }) {
   const { pathname } = useLocation();
-  const { currentCheckpoint, stats } = useApp();
+  const { currentCheckpoint, stats, hasActiveEmergency, sirenActive, toggleSilenceSiren } = useApp();
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-chrome px-4 sm:px-6 lg:px-8">
@@ -32,6 +33,18 @@ export default function Topbar({ onMenu }) {
       <h2 className="text-lg font-semibold tracking-tight text-ink">{titleFor(pathname)}</h2>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        {hasActiveEmergency && (
+          <button
+            type="button"
+            onClick={toggleSilenceSiren}
+            title={sirenActive ? 'Emergency Siren Sounding! (Click to Silence)' : 'Emergency Siren Silenced (Click to Resume)'}
+            className="flex items-center gap-1.5 rounded-full border border-danger/40 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger shadow-xs hover:bg-danger/20 transition-all"
+          >
+            {sirenActive ? <Volume2 size={14} className="animate-bounce" /> : <VolumeX size={14} />}
+            <span className="hidden md:inline">{sirenActive ? 'Siren Active' : 'Siren Silenced'}</span>
+          </button>
+        )}
+
         <Link
           to="/checkpoints"
           className="flex items-center gap-2 rounded-md border border-line px-3 py-1.5 text-sm hover:bg-canvas"

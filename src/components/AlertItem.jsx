@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Trash2 } from 'lucide-react';
 import { useApp } from '../hooks/useApp';
 import { AlertStateBadge, SeverityBadge } from './Badge';
 import { SEVERITY_STYLES, TYPE_ICONS } from './alertMeta';
 import { formatTimestamp } from '../utils/format';
 
 export default function AlertItem({ alert, compact = false }) {
-  const { setAlertState } = useApp();
+  const { setAlertState, deleteAlert } = useApp();
   const [busy, setBusy] = useState(false);
   const Icon = TYPE_ICONS[alert.type] ?? TYPE_ICONS.DEFAULT;
   const style = SEVERITY_STYLES[alert.severity];
@@ -14,6 +15,13 @@ export default function AlertItem({ alert, compact = false }) {
   const change = async (state) => {
     setBusy(true);
     await setAlertState(alert.id, state);
+    setBusy(false);
+  };
+
+  const remove = async () => {
+    if (busy) return;
+    setBusy(true);
+    await deleteAlert(alert.id);
     setBusy(false);
   };
 
@@ -43,16 +51,40 @@ export default function AlertItem({ alert, compact = false }) {
         </p>
       </div>
 
-      {!compact && alert.state !== 'resolved' && (
-        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row sm:items-start">
+      {!compact && (
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:items-start">
           {alert.state === 'new' && (
-            <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => change('acknowledged')}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              disabled={busy}
+              onClick={() => change('acknowledged')}
+            >
               Acknowledge
             </button>
           )}
-          <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => change('resolved')}>
-            Resolve
-          </button>
+          {alert.state !== 'resolved' && (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              disabled={busy}
+              onClick={() => change('resolved')}
+            >
+              Resolve
+            </button>
+          )}
+          {(alert.state === 'acknowledged' || alert.state === 'resolved') && (
+            <button
+              type="button"
+              className="btn btn-sm inline-flex items-center gap-1 border border-rose-200 bg-rose-50/50 text-rose-600 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 transition-colors"
+              title="Delete this alert"
+              disabled={busy}
+              onClick={remove}
+            >
+              <Trash2 size={13} aria-hidden />
+              <span>Delete</span>
+            </button>
+          )}
         </div>
       )}
     </li>

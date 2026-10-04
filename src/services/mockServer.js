@@ -211,6 +211,13 @@ export async function updateAlertState(id, state) {
   return clone(found);
 }
 
+// DELETE /alerts/{id}
+export async function deleteAlert(id) {
+  await delay(100);
+  db.alerts = db.alerts.filter((a) => a.id !== id);
+  return true;
+}
+
 // Demo-only helper.
 export async function resetDb() {
   await delay(150);

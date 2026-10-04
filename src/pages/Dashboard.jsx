@@ -9,6 +9,7 @@ import ActivityTable from '../components/ActivityTable';
 import ScannerPanel from '../components/ScannerPanel';
 import AlertItem from '../components/AlertItem';
 import EmptyState from '../components/EmptyState';
+import SecurityStatusWidget from '../components/SecurityStatusWidget';
 
 export default function Dashboard() {
   usePageTitle('Dashboard');
@@ -19,6 +20,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Security Monitoring Live Bar */}
+      <SecurityStatusWidget />
+
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
         <StatCard label="Total assets" value={stats.total} icon={Boxes} tone="brand" to="/assets" />
         <StatCard label="Available" value={stats.available} icon={CheckCircle2} tone="ok" to="/assets?status=Available" />
