@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { Activity, Boxes, History, LayoutDashboard, ScanLine, Settings, TriangleAlert, X, Radio, ShieldAlert } from 'lucide-react';
+import { Activity, Boxes, History, LayoutDashboard, ScanLine, Settings, TriangleAlert, X, Radio, ShieldAlert, Download, CheckCircle } from 'lucide-react';
 import { useApp } from '../hooks/useApp';
+import { usePwa } from '../hooks/usePwa';
 
 const MAIN_NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -41,6 +42,7 @@ function NavItem({ item, count }) {
 
 export default function Sidebar({ open, onClose }) {
   const { stats } = useApp();
+  const { isInstallable, isInstalled, installApp } = usePwa();
 
   return (
     <>
@@ -77,6 +79,28 @@ export default function Sidebar({ open, onClose }) {
             <NavItem key={item.to} item={item} />
           ))}
         </nav>
+
+        {isInstallable && (
+          <div className="border-t border-line p-3">
+            <button
+              type="button"
+              onClick={installApp}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white shadow-xs hover:bg-brand-700 transition-colors"
+            >
+              <Download size={15} />
+              Install PWA App
+            </button>
+          </div>
+        )}
+
+        {isInstalled && (
+          <div className="border-t border-line px-4 py-2.5 text-[11px] text-ink-mute flex items-center justify-between">
+            <span>PWA Standalone</span>
+            <span className="inline-flex items-center gap-1 font-medium text-ok">
+              <CheckCircle size={12} /> Installed
+            </span>
+          </div>
+        )}
       </aside>
     </>
   );

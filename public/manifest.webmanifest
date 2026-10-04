@@ -1,0 +1,68 @@
+{
+  "id": "hospital-asset-security-iot-system",
+  "name": "Hospital Asset & Security Monitoring System",
+  "short_name": "Hospital IoT",
+  "description": "Real-time RFID biomedical asset tracking and IoT security monitoring for fire, earthquake, smoke, and temperature hazards.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#F4F6F9",
+  "theme_color": "#1F5CC4",
+  "categories": ["medical", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Alerts",
+      "short_name": "Alerts",
+      "description": "View active facility emergency alerts",
+      "url": "./#/alerts",
+      "icons": [{ "src": "pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Security Telemetry",
+      "short_name": "Security",
+      "description": "Real-time IoT sensors and history stream",
+      "url": "./#/security-monitoring",
+      "icons": [{ "src": "pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Asset Tracking",
+      "short_name": "Assets",
+      "description": "Biomedical equipment tracking",
+      "url": "./#/assets",
+      "icons": [{ "src": "pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

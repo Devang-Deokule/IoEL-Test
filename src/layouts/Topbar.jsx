@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, Menu, Radio, Volume2, VolumeX } from 'lucide-react';
+import { Bell, Menu, Radio, Volume2, VolumeX, Download, WifiOff } from 'lucide-react';
 import { useApp } from '../hooks/useApp';
+import { usePwa } from '../hooks/usePwa';
 import { isMockMode } from '../services/api';
 
 const TITLES = {
@@ -23,6 +24,7 @@ function titleFor(pathname) {
 export default function Topbar({ onMenu }) {
   const { pathname } = useLocation();
   const { currentCheckpoint, stats, hasActiveEmergency, sirenActive, toggleSilenceSiren } = useApp();
+  const { isInstallable, isOffline, installApp } = usePwa();
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-chrome px-4 sm:px-6 lg:px-8">
@@ -42,6 +44,28 @@ export default function Topbar({ onMenu }) {
           >
             {sirenActive ? <Volume2 size={14} className="animate-bounce" /> : <VolumeX size={14} />}
             <span className="hidden md:inline">{sirenActive ? 'Siren Active' : 'Siren Silenced'}</span>
+          </button>
+        )}
+
+        {isOffline && (
+          <span
+            className="flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800"
+            title="Working offline via cached PWA application shell"
+          >
+            <WifiOff size={13} />
+            <span className="hidden sm:inline">Offline Mode</span>
+          </span>
+        )}
+
+        {isInstallable && (
+          <button
+            type="button"
+            onClick={installApp}
+            className="flex items-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50 px-2.5 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100 shadow-xs transition-colors"
+            title="Install Hospital IoT Management System to your desktop or home screen"
+          >
+            <Download size={14} className="text-brand-600 animate-pulse" />
+            <span>Install App</span>
           </button>
         )}
 

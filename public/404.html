@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hospital Asset Tracker - Redirecting</title>
+    <script>
+      (function () {
+        var path = window.location.pathname;
+        var repoName = '/IoEL-Test';
+        var search = window.location.search || '';
+        var hash = window.location.hash || '';
+
+        if (path.startsWith(repoName)) {
+          var route = path.substring(repoName.length).replace(/^\/+/, '');
+          window.location.replace(repoName + '/#/' + route + search + hash);
+        } else {
+          window.location.replace('/#/' + path.replace(/^\/+/, '') + search + hash);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <p style="font-family: system-ui, -apple-system, sans-serif; text-align: center; margin-top: 60px; color: #4B5563;">
+      Redirecting to Hospital Asset & Security Management System...
+    </p>
+  </body>
+</html>
