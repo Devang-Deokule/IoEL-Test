@@ -67,32 +67,6 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## ⚙️ Environment Configuration (`.env`)
-
-Create or update the `.env` file in the project root:
-
-```env
-# Mode toggle (Mock mode or FastAPI backend)
-VITE_USE_MOCK=true
-VITE_API_URL=http://localhost:8000
-
-# -----------------------------------------------------------------------------
-# Security Monitoring System - Emergency Alert Channels
-# -----------------------------------------------------------------------------
-# Default recipient for emergency fire & telemetry alerts
-VITE_ALERT_EMAIL_RECIPIENT=deokuledevang2425@ternaengg.ac.in
-
-# EmailJS Service Credentials (https://www.emailjs.com/)
-VITE_EMAILJS_SERVICE_ID=service_l5ctonk
-VITE_EMAILJS_TEMPLATE_ID=template_5fdb379
-VITE_EMAILJS_PUBLIC_KEY=Cd72Nsun_u6VKH3F1
-
-# Optional: Webhook Alert Delivery (Slack, Discord, Zapier, Make, Resend)
-VITE_ALERT_WEBHOOK_URL=
-```
-
----
-
 ## 📧 EmailJS Template Setup Guide
 
 When configuring your template in the [EmailJS Dashboard](https://dashboard.emailjs.com/admin/templates):
